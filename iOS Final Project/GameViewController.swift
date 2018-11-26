@@ -2,7 +2,7 @@
 //  GameViewController.swift
 //  iOS Final Project
 //
-//  Created by Jewel Ito on 11/25/18.
+//  Created by Chin K. Huynh on 11/25/18.
 //  Copyright © 2018 Chin K. Huynh. All rights reserved.
 //
 
@@ -27,8 +27,8 @@ class GameViewController: UIViewController {
             
             view.ignoresSiblingOrder = true
             
-            view.showsFPS = true
-            view.showsNodeCount = true
+            view.showsFPS = false
+            view.showsNodeCount = false
         }
     }
 

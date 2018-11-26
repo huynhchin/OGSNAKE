@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  iOS Final Project
 //
-//  Created by Jewel Ito on 11/25/18.
+//  Created by Chin K. Huynh on 11/25/18.
 //  Copyright © 2018 Chin K. Huynh. All rights reserved.
 //
 
@@ -16,6 +16,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let defaults = UserDefaults.standard
+        let defaultValue = ["bestScore" : 0]
+        defaults.register(defaults: defaultValue)
+        
         return true
     }
 
