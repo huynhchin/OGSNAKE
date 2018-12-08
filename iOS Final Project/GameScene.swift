@@ -1,8 +1,12 @@
 //
 //  GameScene.swift
 //  iOS Final Project
+//  This file initalizes the game OGSNAKE 🐍. It creates a loading screen with a title, a best score label, and the play game button. If the user clicks on the play button, then this file will start the game and will create the starting game logic, the in-game view with a new game board, and add swipe gestures for the game.
+//  CPSC 315, Fall 2018
+//  iOS Final Project
+//  No sources to cite
 //
-//  Created by Chin K. Huynh on 11/25/18.
+//  Created by Chin K. Huynh and Pierce Fleming on 11/25/18.
 //  Copyright © 2018 Chin K. Huynh. All rights reserved.
 //
 
@@ -11,9 +15,10 @@ import GameplayKit
 
 class GameScene: SKScene {
     
+    //setting up variables
     var gameTitle: SKLabelNode!
     var bestScore: SKLabelNode!
-    var playButton: SKShapeNode!
+    var playButton: SKLabelNode!
     var game: GameManager!
     var currentScore: SKLabelNode!
     var playerPositions: [(Int, Int)] = []
@@ -22,10 +27,14 @@ class GameScene: SKScene {
     var scorePos: CGPoint?
     
     override func didMove(to view: SKView) {
+        //once the game view is loaded, set up the initial menu
         initializeMenu()
+        //Set the game variable to a new GameManager object
         game = GameManager(scene: self)
+        //initial the game view
         initializeGameView()
         
+        //Add swipe gestures
         let swipeRight:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipeR))
         swipeRight.direction = .right
         view.addGestureRecognizer(swipeRight)
@@ -40,17 +49,18 @@ class GameScene: SKScene {
         view.addGestureRecognizer(swipeDown)
     }
     
+    //Create functions that are called when the user enters a swipe gesture
     @objc func swipeR() {
-        game.swipe(ID: 3)
+        game.checkingSwipe(ID: 3)
     }
     @objc func swipeL() {
-        game.swipe(ID: 1)
+        game.checkingSwipe(ID: 1)
     }
     @objc func swipeU() {
-        game.swipe(ID: 2)
+        game.checkingSwipe(ID: 2)
     }
     @objc func swipeD() {
-        game.swipe(ID: 4)
+        game.checkingSwipe(ID: 4)
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -58,6 +68,7 @@ class GameScene: SKScene {
         game.update(time: currentTime)
     }
     
+    //this function create the menu for when the game first loaded
     func initializeMenu() {
         //Create game title
         gameTitle = SKLabelNode(fontNamed: "ArialRoundedMTBold")
@@ -76,21 +87,17 @@ class GameScene: SKScene {
         bestScore.fontColor = SKColor.white
         self.addChild(bestScore)
         //Create play button
-        playButton = SKShapeNode()
+        playButton = SKLabelNode(fontNamed: "ArialRoundedMTBold")
         playButton.name = "playButton"
         playButton.zPosition = 1
         playButton.position = CGPoint(x: 0, y: (frame.size.height / -2) + 200)
-        playButton.fillColor = SKColor.cyan
-        let topCorner = CGPoint(x: -50, y: 50)
-        let bottomCorner = CGPoint(x: -50, y: -50)
-        let middle = CGPoint(x: 50, y: 0)
-        let path = CGMutablePath()
-        path.addLine(to: topCorner)
-        path.addLines(between: [topCorner, bottomCorner, middle])
-        playButton.path = path
+        playButton.fontSize = 60
+        playButton.text = "Play!"
+        playButton.fontColor = SKColor.cyan
         self.addChild(playButton)
     }
     
+    //this function starts the game if the user clicked on the play button, the function checks that the node name is playButton and start game
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
@@ -103,6 +110,7 @@ class GameScene: SKScene {
         }
     }
     
+    //the starting game logic
     func startGame() {
         print("start game")
         gameTitle.run(SKAction.move(by: CGVector(dx: -50, dy: 600), duration: 0.5)) {
@@ -112,7 +120,6 @@ class GameScene: SKScene {
             self.playButton.isHidden = true
         }
         let bottomCorner = CGPoint(x: 0, y: (frame.size.height / -2) + 20)
-        //bestScore.run(SKAction.move(to: bottomCorner, duration: 0.4))
         bestScore.run(SKAction.move(to: bottomCorner, duration: 0.4)) {
             self.gameBackground.setScale(0)
             self.currentScore.setScale(0)
@@ -124,6 +131,7 @@ class GameScene: SKScene {
         }
     }
     
+    //initialize the game view, this function creates the view for player to see when player is playing the game
     func initializeGameView() {
         currentScore = SKLabelNode(fontNamed: "ArialRoundedMTBold")
         currentScore.zPosition = 1
@@ -144,9 +152,10 @@ class GameScene: SKScene {
         createGameBoard(width: Int(width), height: Int(height))
     }
     
+    //this function creates the game board
     func createGameBoard(width: Int, height: Int) {
         let cellWidth: CGFloat = 27.5
-        let numRows = 40
+        let numRows = 38
         let numCols = 20
         var x = CGFloat(width / -2) + (cellWidth / 2)
         var y = CGFloat(height / 2) - (cellWidth / 2)

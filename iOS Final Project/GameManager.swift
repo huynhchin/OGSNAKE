@@ -1,8 +1,12 @@
 //
 //  GameManager.swift
 //  iOS Final Project
+//  This file manages the game logic. It controls the whole logic of the game, everything from generating the snake and apple, updating player's position, adding score, checking if the game will end, and end game logic.
+//  CPSC 315, Fall 2018
+//  iOS Final Project
+//  No sources to cite
 //
-//  Created by Chin K. Huynh on 11/25/18.
+//  Created by Chin K. Huynh and Pierce Fleming on 11/25/18.
 //  Copyright © 2018 Chin K. Huynh. All rights reserved.
 //
 
@@ -10,6 +14,7 @@ import SpriteKit
 
 class GameManager {
     
+    //setting up variables
     var scene: GameScene!
     var nextTime: Double?
     var timeSpeed: Double = 0.10
@@ -21,25 +26,29 @@ class GameManager {
         self.scene = scene
     }
     
+    //initialize the game
     func initGame() {
         //starting player position
         scene.playerPositions.append((20, 10))
         scene.playerPositions.append((19, 10))
         scene.playerPositions.append((18, 10))
         renderChange()
-        generateNewPoint()
+        generateNewApple()
     }
     
-    func generateNewPoint() {
+    //generate a new "apple" on the screen
+    func generateNewApple() {
         var randomX = CGFloat(arc4random_uniform(19))
         var randomY = CGFloat(arc4random_uniform(39))
-        while contains(a: scene.playerPositions, v: (Int(randomX), Int(randomY))) {
+        //ensure that the generated apple is not generated inside the body of the snake
+        while isSameCoordinates(a: scene.playerPositions, v: (Int(randomX), Int(randomY))) {
             randomX = CGFloat(arc4random_uniform(19))
             randomY = CGFloat(arc4random_uniform(39))
         }
         scene.scorePos = CGPoint(x: randomX, y: randomY)
     }
     
+    //for every second, update the player's position, check if the user score, check if the game will end, and run the end game logic if the game will end.
     func update(time: Double) {
         if nextTime == nil {
             nextTime = time + timeSpeed
@@ -47,14 +56,15 @@ class GameManager {
             if time >= nextTime! {
                 nextTime = time + timeSpeed
                 updatePlayerPosition()
-                checkForScore()
+                updateCurrentScore()
                 checkEndGame()
                 finishGame()
             }
         }
     }
     
-    func updateScore() {
+    //update the best score
+    func updateBestScore() {
         if currentScore > UserDefaults.standard.integer(forKey: "bestScore") {
             UserDefaults.standard.set(currentScore, forKey: "bestScore")
         }
@@ -63,6 +73,7 @@ class GameManager {
         scene.bestScore.text = "Best Score: \(UserDefaults.standard.integer(forKey: "bestScore"))"
     }
     
+    //check if the game will finish and end the game if it will
     func finishGame() {
         if playerDirection == 0 && scene.playerPositions.count > 0 {
             var hasFinished = true
@@ -74,7 +85,7 @@ class GameManager {
             }
             if hasFinished {
                 print("end game")
-                updateScore()
+                updateBestScore()
                 playerDirection = 4
                 //animation has completed
                 scene.scorePos = nil
@@ -97,17 +108,19 @@ class GameManager {
         }
     }
     
+    //checks if the game will end
     func checkEndGame() {
         if scene.playerPositions.count > 0 {
             var arrayOfPositions = scene.playerPositions
             let headOfSnake = arrayOfPositions[0]
             arrayOfPositions.remove(at: 0)
-            if contains(a: arrayOfPositions, v: headOfSnake) {
+            if isSameCoordinates(a: arrayOfPositions, v: headOfSnake) {
                 playerDirection = 0
             }
         }
     }
     
+    //update the player's position
     func updatePlayerPosition() {
         var xChange = 0
         var yChange = 0
@@ -165,14 +178,15 @@ class GameManager {
         renderChange()
     }
     
-    func checkForScore() {
+    //update the current score
+    func updateCurrentScore() {
         if scene.scorePos != nil {
             let x = scene.playerPositions[0].0
             let y = scene.playerPositions[0].1
             if Int((scene.scorePos?.x)!) == y && Int((scene.scorePos?.y)!) == x {
                 currentScore += 1
                 scene.currentScore.text = "Score: \(currentScore)"
-                generateNewPoint()
+                generateNewApple()
                 scene.playerPositions.append(scene.playerPositions.last!)
                 scene.playerPositions.append(scene.playerPositions.last!)
                 scene.playerPositions.append(scene.playerPositions.last!)
@@ -180,9 +194,11 @@ class GameManager {
         }
     }
     
-    func swipe(ID: Int) {
+    //If a swipe is not conflicting with the current direction, set the player’s direction to the swipe input. For example, if you are moving down you can’t immediately move up.
+    func checkingSwipe(ID: Int) {
         if !(ID == 2 && playerDirection == 4) && !(ID == 4 && playerDirection == 2) {
             if !(ID == 1 && playerDirection == 3) && !(ID == 3 && playerDirection == 1) {
+                //if the snake isn't dead, then apply the swipe
                 if playerDirection != 0 {
                     playerDirection = ID
                 }
@@ -190,9 +206,10 @@ class GameManager {
         }
     }
     
+    //everytime the snake moves, every node that contains the snake is green, the apple is red, and all other nodes are clear
     func renderChange() {
         for (node, x, y) in scene.gameBoard {
-            if contains(a: scene.playerPositions, v: (x,y)) {
+            if isSameCoordinates(a: scene.playerPositions, v: (x,y)) {
                 node.fillColor = SKColor.green
             } else {
                 node.fillColor = SKColor.clear
@@ -205,7 +222,8 @@ class GameManager {
         }
     }
     
-    func contains(a:[(Int, Int)], v:(Int,Int)) -> Bool {
+    //This function checks if the two inputs coordinates are the same, if they're the same return true, else false
+    func isSameCoordinates(a:[(Int, Int)], v:(Int,Int)) -> Bool {
         let (c1, c2) = v
         for (v1, v2) in a { if v1 == c1 && v2 == c2 { return true } }
         return false
